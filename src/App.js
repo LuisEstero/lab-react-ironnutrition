@@ -1,44 +1,79 @@
-// src/App.js
+import { useState } from 'react';
 import './App.css';
+import AddFood from './components/AddFood';
+import FoodBox from './components/FoodBox';
+import SearchFood from './components/SearchFood';
 import foods from './foods.json';
-import { Card, Row, Col, Divider, Input, Button } from 'antd';
-import React, { useState } from 'react';
 
+function App() {
+  const [foodList, setFoodList] = useState(foods);
+  const [consumedFood, setConsumedFood] = useState([]);
+  const [showAddFoodForm, setShowAddFoodForm] = useState(false);
+  const [foodToRender, setFoodToRender] = useState(foods);
 
-function Example() {
-  
-  const Example = (props) => { 
-  }
+  const addToConsumedCalories = (foodToConsume) => {
+    setConsumedFood([...consumedFood, foodToConsume]);
+  };
+
+  const total = consumedFood.reduce((acc, eachFoodCalories) => {
+    return acc + eachFoodCalories.quantity * eachFoodCalories.calories;
+  }, 0);
+
+  const addFood = (food) => {
+    setFoodList([...foodList, food]);
+    setFoodToRender([...foodList, food]);
+  };
+
+  const searchFood = (searchQuery) => {
+    const filteredFood = foodList.filter((eachFood) => {
+      return eachFood.name.includes(searchQuery);
+    });
+    setFoodToRender(filteredFood);
+  };
+
+  const deleteFood = (foodName) => {
+    const foodListCopy = [...consumedFood];
+    foodListCopy.splice(foodName, 1);
+    setConsumedFood(foodListCopy);
+  };
+
   return (
-    <div><div>
-    <p> FOOD_NAME_HERE </p>
-    <img src="FOOD_IMAGE_HERE" width={0} />
-  </div>
-      <Row>
-        <Col>
-          <Divider>Fancy Input</Divider>
-          <Input value={''} onChange={() => {}} />
-        </Col>
+    <div className="App">
+      <h1>Welcome to IronNutrition</h1>
 
-        <Col>
-          <Card title={'Fancy Card'}>
-            <Button onClick={() => {}}>Fancy Button</Button>
-          </Card>
-        </Col>
-      </Row>
+      <button onClick={() => setShowAddFoodForm(!showAddFoodForm)}>
+        {showAddFoodForm ? 'Hidde Form' : 'Show Form'}
+      </button>
+
+      {showAddFoodForm && <AddFood addFood={addFood} />}
+
+      <SearchFood searchFood={searchFood} />
+
+      <h3>Today's Food:</h3>
+
+      {consumedFood.map((eachFoodCalories, index) => {
+        const { name, quantity, calories } = eachFoodCalories;
+        return (
+          <p key={index + eachFoodCalories.name}>
+            {name} : {quantity} x {calories} cal. = {quantity * calories} cal.{' '}
+            <button onClick={() => deleteFood(index)}> Delete</button>
+          </p>
+        );
+      })}
+
+      <h4>Total: {total} cal</h4>
+
+      {foodToRender.map((eachFood, index) => {
+        return (
+          <FoodBox
+            eachFoodProps={eachFood}
+            key={index + eachFood.name}
+            addToConsumedCalories={addToConsumedCalories}
+          />
+        );
+      })}
     </div>
   );
 }
-
-
-
-function App() {
-  return <div className="App"></div>;
-}
-
-
-
-
-
 
 export default App;
